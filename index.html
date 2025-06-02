@@ -35,6 +35,13 @@
             overflow: hidden;
             border-left: 8px solid #4A4A4A;
             border-right: 8px solid #4A4A4A;
+            animation: laneGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes laneGlow {
+            0% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 107, 53, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.5); }
         }
 
         .lane::before {
@@ -111,11 +118,11 @@
                 opacity: 1;
             }
             30% {
-                transform: rotate(45deg) scale(1.1);
+                transform: rotate(calc(var(--angle) * 45deg)) scale(1.1);
                 opacity: 0.9;
             }
             100% { 
-                transform: rotate(90deg) translateY(-15px) scale(0.8);
+                transform: rotate(calc(var(--angle) * 90deg)) translateY(-15px) scale(0.8);
                 opacity: 0.6;
             }
         }
@@ -164,6 +171,12 @@
             z-index: 5;
             border-radius: 2px;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: aimWobble 0.3s ease-in-out infinite alternate;
+        }
+
+        @keyframes aimWobble {
+            0% { transform: translateX(-50%) rotate(calc(var(--angle) - 1deg)); }
+            100% { transform: translateX(-50%) rotate(calc(var(--angle) + 1deg)); }
         }
 
         .ball {
@@ -215,15 +228,18 @@
             0% { 
                 transform: translateX(-50%) rotate(0deg) scale(1);
                 bottom: 30px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.6);
             }
             50% {
                 transform: translateX(-50%) rotate(360deg) scale(0.8);
                 bottom: 50%;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             }
             100% { 
                 transform: translateX(-50%) rotate(720deg) scale(0.5);
                 bottom: 80%;
                 opacity: 0.7;
+                box-shadow: 0 15px 40px rgba(0,0,0,0.9);
             }
         }
 
@@ -243,9 +259,17 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            background: linear-gradient(to top, #4ecdc4, #44a08d, #f093fb);
-            transition: height 0.1s ease-out;
+            background: linear-gradient(to top, #4ecdc4, #44a08d);
+            transition: height 0.1s ease-out, background 0.2s ease;
             border-radius: 0 0 8px 8px;
+        }
+
+        .power-fill.low {
+            background: linear-gradient(to top, #4ecdc4, #44a08d);
+        }
+
+        .power-fill.high {
+            background: linear-gradient(to top, #ff4757, #c44569);
         }
 
         .scoreboard {
@@ -283,6 +307,7 @@
             min-height: 50px;
             display: flex;
             flex-direction: column;
+            transition: background 0.3s ease;
         }
 
         .frame.current {
@@ -302,12 +327,20 @@
             gap: 2px;
             font-size: 12px;
             margin: 2px 0;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
 
         .frame-total {
             font-weight: bold;
             font-size: 14px;
             margin-top: auto;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
         }
 
         .game-info {
@@ -323,6 +356,13 @@
             font-weight: bold;
             color: #FFD700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: scorePulse 0.5s ease;
+        }
+
+        @keyframes scorePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .instruction {
@@ -380,6 +420,14 @@
 
         .reset-btn:active {
             transform: scale(0.95);
+        }
+
+        canvas.confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 50;
         }
     </style>
 </head>
@@ -463,6 +511,11 @@
             });
         }
 
+        function playSound(src) {
+            const audio = new Audio(src);
+            audio.play().catch(() => {}); // Handle potential playback errors
+        }
+
         function setupTouchControls() {
             const ball = document.getElementById('ball');
             const powerFill = document.getElementById('powerFill');
@@ -489,15 +542,18 @@
                 const deltaY = Math.max(0, currentY - startY);
                 const deltaX = currentX - startX;
                 
-                // Calculate power
                 gameState.power = Math.min(100, (deltaY / 200) * 100);
                 powerFill.style.height = gameState.power + '%';
+                powerFill.className = 'power-fill ' + (gameState.power > 70 ? 'high' : 'low');
                 
-                // Calculate aim angle (limited range)
+                if (gameState.power > 70 && 'vibrate' in navigator) {
+                    navigator.vibrate(50);
+                }
+                
                 gameState.aimAngle = Math.max(-30, Math.min(30, (deltaX / 100) * 30));
+                aimLine.style.setProperty('--angle', gameState.aimAngle + 'deg');
                 aimLine.style.transform = `translateX(-50%) rotate(${gameState.aimAngle}deg)`;
                 
-                // Visual feedback - move ball slightly
                 const ballOffset = Math.min(40, deltaY * 0.2);
                 ball.style.transform = `translateX(-50%) translateY(${ballOffset}px)`;
             });
@@ -510,16 +566,15 @@
                 if (gameState.power > 5) {
                     rollBall();
                 } else {
-                    // Reset ball position if not enough power
                     ball.style.transform = 'translateX(-50%)';
                     aimLine.style.transform = 'translateX(-50%) rotate(0deg)';
                     powerFill.style.height = '0%';
+                    powerFill.className = 'power-fill low';
                     gameState.power = 0;
                     gameState.aimAngle = 0;
                 }
             });
 
-            // Prevent scrolling
             document.addEventListener('touchmove', (e) => {
                 e.preventDefault();
             }, { passive: false });
@@ -533,23 +588,20 @@
             const powerFill = document.getElementById('powerFill');
             const aimLine = document.getElementById('aimLine');
             
-            // Reset power meter and aim line
+            playSound('roll.mp3'); // Add roll.mp3 in your project folder
             powerFill.style.height = '0%';
+            powerFill.className = 'power-fill low';
             aimLine.style.transform = 'translateX(-50%) rotate(0deg)';
             
-            // Apply aim angle to ball trajectory
-            const aimOffset = (gameState.aimAngle / 30) * 100; // Convert angle to pixel offset
+            const aimOffset = (gameState.aimAngle / 30) * 100;
             ball.style.left = `calc(50% + ${aimOffset}px)`;
             
-            // Animate ball rolling down the lane
             ball.classList.add('rolling');
             
-            // Calculate accuracy and power based on aim and power
             const powerFactor = gameState.power / 100;
-            const aimAccuracy = 1 - Math.abs(gameState.aimAngle) / 30 * 0.3; // Better accuracy with centered aim
+            const aimAccuracy = 1 - Math.abs(gameState.aimAngle) / 30 * 0.3;
             const accuracy = aimAccuracy * (0.7 + (Math.random() * 0.3));
             
-            // Simulate ball reaching pins
             setTimeout(() => {
                 const pinsHit = calculatePinsHit(powerFactor, accuracy, gameState.aimAngle);
                 knockDownPins(pinsHit);
@@ -565,22 +617,18 @@
             const baseHits = Math.floor(power * 10 * accuracy);
             const randomFactor = Math.random();
             
-            // Strike probability increases with power and accuracy, decreases with bad aim
             if (power > 0.8 && accuracy > 0.8 && Math.abs(aimAngle) < 10 && randomFactor > 0.6) {
-                return 10; // Strike!
+                return 10;
             }
             
-            // Calculate actual pins hit based on aim
             let pinsHit = Math.min(10, Math.max(0, baseHits + Math.floor(Math.random() * 3) - 1));
             
-            // Adjust for aim - better aim hits more pins
             if (Math.abs(aimAngle) > 20) {
                 pinsHit = Math.max(0, pinsHit - 2);
             } else if (Math.abs(aimAngle) < 5) {
                 pinsHit = Math.min(10, pinsHit + 1);
             }
             
-            // If it's the second roll, can't hit more pins than are standing
             if (gameState.currentRoll === 2) {
                 const pinsStanding = pins.filter(pin => !pin.knocked).length;
                 pinsHit = Math.min(pinsHit, pinsStanding);
@@ -592,8 +640,8 @@
         function knockDownPins(numPins) {
             const standingPins = pins.filter(pin => !pin.knocked);
             
-            // Create explosion effect
             if (numPins > 0) {
+                playSound('strike.mp3'); // Add strike.mp3 in your project folder
                 createPinExplosion();
             }
             
@@ -601,16 +649,16 @@
                 const randomIndex = Math.floor(Math.random() * standingPins.length);
                 const pinToKnock = standingPins.splice(randomIndex, 1)[0];
                 pinToKnock.knocked = true;
+                pinToKnock.element.style.setProperty('--angle', Math.random() > 0.5 ? 1 : -1);
                 
-                // Add staggered animation delay for more realistic effect
                 setTimeout(() => {
                     pinToKnock.element.classList.add('knocked');
                 }, i * 100);
             }
             
-            // Celebration for strikes and spares
             if (numPins === 10) {
                 setTimeout(() => {
+                    playSound('cheer.mp3'); // Add cheer.mp3 in your project folder
                     showCelebration(gameState.currentRoll === 1 ? "STRIKE! 🔥" : "SPARE! ✨");
                 }, 500);
             }
@@ -621,7 +669,6 @@
             const explosion = document.createElement('div');
             explosion.className = 'pin-explosion';
             
-            // Create multiple particles
             for (let i = 0; i < 12; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'pin-particle';
@@ -641,7 +688,6 @@
             
             pinsArea.appendChild(explosion);
             
-            // Remove explosion after animation
             setTimeout(() => {
                 explosion.remove();
             }, 1000);
@@ -653,6 +699,36 @@
             celebration.textContent = text;
             document.querySelector('.game-container').appendChild(celebration);
             
+            const canvas = document.createElement('canvas');
+            canvas.className = 'confetti';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.querySelector('.game-container').appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+            
+            const confetti = Array(50).fill().map(() => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * -canvas.height,
+                size: Math.random() * 10 + 5,
+                speed: Math.random() * 5 + 2,
+                color: `hsl(${Math.random() * 360}, 100%, 50%)`
+            }));
+            
+            function animateConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confetti.forEach(p => {
+                    p.y += p.speed;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                });
+                if (confetti.some(p => p.y < canvas.height)) {
+                    requestAnimationFrame(animateConfetti);
+                } else {
+                    canvas.remove();
+                }
+            }
+            animateConfetti();
+            
             setTimeout(() => {
                 celebration.remove();
             }, 2000);
@@ -662,18 +738,15 @@
             const frame = gameState.frames[gameState.currentFrame - 1];
             frame.rolls.push(pinsHit);
             
-            // Check for strike
             if (gameState.currentRoll === 1 && pinsHit === 10) {
                 frame.isStrike = true;
                 nextFrame();
             } else if (gameState.currentRoll === 2) {
-                // Check for spare
                 if (frame.rolls[0] + frame.rolls[1] === 10) {
                     frame.isSpare = true;
                 }
                 nextFrame();
             } else {
-                // Go to second roll
                 gameState.currentRoll = 2;
             }
             
@@ -686,10 +759,9 @@
                 gameState.currentFrame++;
                 gameState.currentRoll = 1;
                 setTimeout(() => {
-                    createPins(); // Reset pins for next frame
+                    createPins();
                 }, 1000);
             } else {
-                // Handle 10th frame special rules
                 if (gameState.currentFrame === 10) {
                     const frame = gameState.frames[9];
                     if (frame.isStrike || frame.isSpare) {
@@ -697,7 +769,7 @@
                             gameState.currentRoll++;
                             if (frame.rolls.length === 2 && (frame.rolls[0] === 10 || frame.rolls[0] + frame.rolls[1] === 10)) {
                                 setTimeout(() => {
-                                    createPins(); // Reset pins for bonus roll
+                                    createPins();
                                 }, 1000);
                             }
                             return;
@@ -714,10 +786,9 @@
             for (let i = 0; i < 10; i++) {
                 const frame = gameState.frames[i];
                 
-                if (i < 9) { // Frames 1-9
+                if (i < 9) {
                     if (frame.isStrike) {
                         frame.total = 10;
-                        // Add next two rolls as bonus
                         if (gameState.frames[i + 1].rolls.length > 0) {
                             frame.total += gameState.frames[i + 1].rolls[0];
                             if (gameState.frames[i + 1].isStrike && i < 8 && gameState.frames[i + 2].rolls.length > 0) {
@@ -728,14 +799,13 @@
                         }
                     } else if (frame.isSpare) {
                         frame.total = 10;
-                        // Add next roll as bonus
                         if (gameState.frames[i + 1].rolls.length > 0) {
                             frame.total += gameState.frames[i + 1].rolls[0];
                         }
                     } else {
                         frame.total = frame.rolls.reduce((sum, roll) => sum + roll, 0);
                     }
-                } else { // 10th frame
+                } else {
                     frame.total = frame.rolls.reduce((sum, roll) => sum + roll, 0);
                 }
                 
@@ -760,7 +830,7 @@
                 const rolls = document.createElement('div');
                 rolls.className = 'rolls';
                 
-                if (index < 9) { // Frames 1-9
+                if (index < 9) {
                     if (frame.isStrike) {
                         rolls.textContent = 'X';
                     } else if (frame.isSpare) {
@@ -768,7 +838,7 @@
                     } else {
                         rolls.textContent = frame.rolls.map(roll => roll || '-').join(' ');
                     }
-                } else { // 10th frame
+                } else {
                     rolls.textContent = frame.rolls.map(roll => roll === 10 ? 'X' : roll || '-').join(' ');
                 }
                 
@@ -791,7 +861,7 @@
             const ball = document.getElementById('ball');
             ball.classList.remove('rolling');
             ball.style.transform = 'translateX(-50%)';
-            ball.style.left = '50%'; // Reset horizontal position
+            ball.style.left = '50%';
             gameState.ballInMotion = false;
             gameState.power = 0;
             gameState.aimAngle = 0;
@@ -820,6 +890,7 @@
             resetBallPosition();
             document.getElementById('instruction').classList.remove('hidden');
             document.getElementById('powerFill').style.height = '0%';
+            document.getElementById('powerFill').className = 'power-fill low';
             document.getElementById('aimLine').style.transform = 'translateX(-50%) rotate(0deg)';
         }
 
@@ -844,7 +915,6 @@
             }, 1000);
         }
 
-        // Initialize the game
         initGame();
     </script>
 </body>
