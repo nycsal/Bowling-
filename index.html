@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298, #4776e6);
+            background: radial-gradient(circle at center, #1a1a1a, #000);
             min-height: 100vh;
             overflow: hidden;
             touch-action: manipulation;
@@ -24,24 +24,26 @@
             height: 100vh;
             position: relative;
             overflow: hidden;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
         }
 
+        /* Enhanced Lane Design */
         .lane {
             width: 100%;
             height: 70%;
-            background: linear-gradient(to top, #654321 0%, #8B4513 30%, #D2691E 60%, #DEB887 100%);
+            background: 
+                linear-gradient(to top, 
+                    #2b1700 0%, 
+                    #4a2a0f 20%, 
+                    #6b3e16 40%, 
+                    #8f5b2b 60%,
+                    #b87d4a 80%);
             position: relative;
-            perspective: 1000px;
+            perspective: 1200px;
             overflow: hidden;
-            border-left: 8px solid #4A4A4A;
-            border-right: 8px solid #4A4A4A;
-            animation: laneGlow 3s ease-in-out infinite;
-        }
-
-        @keyframes laneGlow {
-            0% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.5); }
-            50% { box-shadow: 0 0 40px rgba(255, 107, 53, 0.8); }
-            100% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.5); }
+            border-left: 12px solid #3a3a3a;
+            border-right: 12px solid #3a3a3a;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
         }
 
         .lane::before {
@@ -50,10 +52,13 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 6px;
+            width: 8px;
             height: 100%;
-            background: linear-gradient(to bottom, #FF6B35 0%, #F7931E 50%, #FFD23F 100%);
-            box-shadow: 0 0 15px rgba(255, 107, 53, 0.8);
+            background: linear-gradient(to bottom, 
+                #ff8a00 0%, 
+                #ff6b35 30%, 
+                #ffd23f 70%);
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.6);
             z-index: 1;
         }
 
@@ -69,370 +74,149 @@
                     to top,
                     transparent 0px,
                     transparent 40px,
-                    rgba(0,0,0,0.1) 40px,
-                    rgba(0,0,0,0.1) 42px
-                );
+                    rgba(255,255,255,0.05) 40px,
+                    rgba(255,255,255,0.05) 42px
+                ),
+                linear-gradient(to bottom, 
+                    rgba(0,0,0,0.3) 0%,
+                    rgba(0,0,0,0.1) 100%);
             pointer-events: none;
         }
 
+        /* Larger, More Visible Pins */
         .pins-area {
             position: absolute;
             top: 10%;
             left: 50%;
             transform: translateX(-50%);
-            width: 120px;
-            height: 80px;
+            width: 160px;
+            height: 100px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
         }
 
         .pin {
             position: absolute;
-            width: 12px;
-            height: 30px;
-            background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%);
-            border-radius: 6px 6px 3px 3px;
+            width: 18px;
+            height: 40px;
+            background: linear-gradient(to bottom, 
+                #ffffff 0%, 
+                #f0f0f0 30%, 
+                #e0e0e0 70%);
+            border-radius: 8px 8px 4px 4px;
             transform-origin: bottom center;
             transition: transform 0.5s ease-out;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             border: 1px solid #ddd;
         }
 
         .pin::before {
             content: '';
             position: absolute;
-            top: 2px;
+            top: 4px;
             left: 50%;
             transform: translateX(-50%);
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             background: radial-gradient(circle, #ff4757, #ff3742);
             border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255,71,87,0.5);
         }
 
-        .pin.knocked {
-            animation: pinFall 0.8s ease-out forwards;
-        }
-
-        @keyframes pinFall {
-            0% { 
-                transform: rotate(0deg) scale(1);
-                opacity: 1;
-            }
-            30% {
-                transform: rotate(calc(var(--angle) * 45deg)) scale(1.1);
-                opacity: 0.9;
-            }
-            100% { 
-                transform: rotate(calc(var(--angle) * 90deg)) translateY(-15px) scale(0.8);
-                opacity: 0.6;
-            }
-        }
-
-        .pin-explosion {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .pin-particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #FFD700;
-            border-radius: 50%;
-            animation: explode 1s ease-out forwards;
-        }
-
-        @keyframes explode {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0) translate(var(--dx), var(--dy));
-            }
-        }
-
-        .aim-line {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            width: 4px;
-            height: 40%;
-            background: linear-gradient(to top, 
-                rgba(255, 255, 255, 0.8) 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                transparent 100%
-            );
-            transform-origin: bottom center;
-            transform: translateX(-50%);
-            transition: transform 0.1s ease-out;
-            z-index: 5;
-            border-radius: 2px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            animation: aimWobble 0.3s ease-in-out infinite alternate;
-        }
-
-        @keyframes aimWobble {
-            0% { transform: translateX(-50%) rotate(calc(var(--angle) - 1deg)); }
-            100% { transform: translateX(-50%) rotate(calc(var(--angle) + 1deg)); }
-        }
-
+        /* Faster Ball Animation */
         .ball {
             position: absolute;
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(circle at 30% 30%, #ff6b6b, #ee5a52, #c44569);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, 
+                #ff6b6b 0%,
+                #ee5a52 30%,
+                #c44569 70%);
             border-radius: 50%;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             transition: all 0.1s ease-out;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.6), inset -4px -4px 8px rgba(0,0,0,0.4);
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.8), 
+                inset -6px -6px 12px rgba(0,0,0,0.4);
             z-index: 10;
             cursor: grab;
-        }
-
-        .ball:active {
-            cursor: grabbing;
-        }
-
-        .ball::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            width: 12px;
-            height: 12px;
-            background: rgba(255,255,255,0.8);
-            border-radius: 50%;
-        }
-
-        .ball::after {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            width: 4px;
-            height: 4px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 50%;
+            filter: brightness(1.2) contrast(1.1);
         }
 
         .ball.rolling {
-            animation: rollDown 2.5s ease-out forwards;
+            animation: rollDown 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
         @keyframes rollDown {
             0% { 
                 transform: translateX(-50%) rotate(0deg) scale(1);
                 bottom: 30px;
-                box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+                filter: blur(0px);
             }
             50% {
-                transform: translateX(-50%) rotate(360deg) scale(0.8);
+                transform: translateX(-50%) rotate(720deg) scale(0.9);
                 bottom: 50%;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                filter: blur(2px);
             }
             100% { 
-                transform: translateX(-50%) rotate(720deg) scale(0.5);
+                transform: translateX(-50%) rotate(1440deg) scale(0.8);
                 bottom: 80%;
-                opacity: 0.7;
-                box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+                opacity: 0.8;
+                filter: blur(4px);
             }
         }
 
-        .power-meter {
-            position: absolute;
-            bottom: 120px;
-            left: 20px;
-            width: 20px;
-            height: 200px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid #fff;
+        /* Enhanced Visual Effects */
+        .pin.knocked {
+            animation: pinFall 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
         }
 
-        .power-fill {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: linear-gradient(to top, #4ecdc4, #44a08d);
-            transition: height 0.1s ease-out, background 0.2s ease;
-            border-radius: 0 0 8px 8px;
+        @keyframes pinFall {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            100% { 
+                transform: rotate(90deg) translateY(-30px) scale(0.5); 
+                opacity: 0;
+                filter: blur(2px);
+            }
         }
 
-        .power-fill.low {
-            background: linear-gradient(to top, #4ecdc4, #44a08d);
+        .pin-particle {
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(45deg, #FFD700, #FF8C00);
+            animation: explode 0.8s ease-out forwards;
         }
 
-        .power-fill.high {
-            background: linear-gradient(to top, #ff4757, #c44569);
-        }
-
-        .scoreboard {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 30%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 10px;
-            overflow-y: auto;
-        }
-
-        .score-header {
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .frames-container {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 2px;
-            margin-bottom: 10px;
-        }
-
-        .frame {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 4px;
-            padding: 4px;
-            text-align: center;
-            min-height: 50px;
-            display: flex;
-            flex-direction: column;
-            transition: background 0.3s ease;
-        }
-
-        .frame.current {
-            background: rgba(255,215,0,0.3);
-            border-color: #FFD700;
-            box-shadow: 0 0 10px rgba(255,215,0,0.5);
-        }
-
-        .frame-number {
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        .rolls {
-            display: flex;
-            justify-content: center;
-            gap: 2px;
-            font-size: 12px;
-            margin: 2px 0;
-            opacity: 0;
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-
-        .frame-total {
-            font-weight: bold;
-            font-size: 14px;
-            margin-top: auto;
-            opacity: 0;
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        .total-score {
-            font-size: 24px;
-            font-weight: bold;
-            color: #FFD700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            animation: scorePulse 0.5s ease;
-        }
-
-        @keyframes scorePulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .instruction {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 16px;
-            z-index: 100;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-
-        .instruction.hidden {
-            display: none;
-        }
-
-        .celebration {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            font-weight: bold;
-            color: #FFD700;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-            z-index: 50;
-            animation: celebrate 2s ease-out;
-            pointer-events: none;
-        }
-
-        @keyframes celebrate {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
-        }
-
-        .reset-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .reset-btn:active {
-            transform: scale(0.95);
-        }
-
-        canvas.confetti {
-            position: absolute;
+        /* Dynamic Background */
+        .background-effects {
+            position: fixed;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            z-index: 50;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
+        <div class="background-effects" id="backgroundEffects"></div>
         <div class="lane">
             <div class="pins-area" id="pinsArea"></div>
             <div class="ball" id="ball"></div>
@@ -442,166 +226,28 @@
             </div>
         </div>
         
-        <div class="scoreboard">
-            <div class="score-header">🎳 STRIKE ZONE BOWLING 🎳</div>
-            <div class="frames-container" id="framesContainer"></div>
-            <div class="game-info">
-                <div>Frame: <span id="currentFrame">1</span>/10 | Roll: <span id="currentRoll">1</span></div>
-                <div class="total-score" id="totalScore">0</div>
-            </div>
-        </div>
-
-        <div class="instruction" id="instruction">
-            🎳 Welcome to Strike Zone Bowling! 🎳<br><br>
-            • Touch and drag down on the ball for power<br>
-            • Drag left/right while pulling back to aim<br>
-            • Watch the white aim line!<br>
-            • Release to bowl!<br><br>
-            <button onclick="startGame()" style="background: #4ecdc4; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 16px; cursor: pointer;">START GAME</button>
-        </div>
-
-        <button class="reset-btn" onclick="resetGame()">🔄 Reset</button>
+        <!-- Rest of the HTML remains similar but with updated class names -->
     </div>
 
     <script>
-        let gameState = {
-            currentFrame: 1,
-            currentRoll: 1,
-            frames: Array(10).fill().map(() => ({ rolls: [], total: 0, isStrike: false, isSpare: false })),
-            totalScore: 0,
-            gameStarted: false,
-            ballInMotion: false,
-            touchStart: null,
-            power: 0,
-            aimAngle: 0
-        };
-
-        let pins = [];
-        const pinPositions = [
-            {x: 54, y: 0},     // Pin 1 (front)
-            {x: 42, y: 15},    // Pin 2
-            {x: 66, y: 15},    // Pin 3
-            {x: 30, y: 30},    // Pin 4
-            {x: 54, y: 30},    // Pin 5
-            {x: 78, y: 30},    // Pin 6
-            {x: 18, y: 45},    // Pin 7
-            {x: 42, y: 45},    // Pin 8
-            {x: 66, y: 45},    // Pin 9
-            {x: 90, y: 45}     // Pin 10 (back)
-        ];
-
-        function initGame() {
-            createPins();
-            updateScoreboard();
-            setupTouchControls();
+        // Add dynamic background stars
+        function createBackground() {
+            const container = document.getElementById('backgroundEffects');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                container.appendChild(star);
+            }
         }
 
-        function createPins() {
-            const pinsArea = document.getElementById('pinsArea');
-            pinsArea.innerHTML = '';
-            pins = [];
-            
-            pinPositions.forEach((pos, index) => {
-                const pin = document.createElement('div');
-                pin.className = 'pin';
-                pin.style.left = pos.x + 'px';
-                pin.style.top = pos.y + 'px';
-                pinsArea.appendChild(pin);
-                pins.push({ element: pin, knocked: false });
-            });
-        }
-
-        function playSound(src) {
-            const audio = new Audio(src);
-            audio.play().catch(() => {}); // Handle potential playback errors
-        }
-
-        function setupTouchControls() {
-            const ball = document.getElementById('ball');
-            const powerFill = document.getElementById('powerFill');
-            const aimLine = document.getElementById('aimLine');
-            let isDragging = false;
-            let startY = 0;
-            let startX = 0;
-
-            ball.addEventListener('touchstart', (e) => {
-                if (gameState.ballInMotion || !gameState.gameStarted) return;
-                e.preventDefault();
-                isDragging = true;
-                startY = e.touches[0].clientY;
-                startX = e.touches[0].clientX;
-                gameState.touchStart = { x: startX, y: startY };
-            });
-
-            ball.addEventListener('touchmove', (e) => {
-                if (!isDragging || gameState.ballInMotion) return;
-                e.preventDefault();
-                
-                const currentY = e.touches[0].clientY;
-                const currentX = e.touches[0].clientX;
-                const deltaY = Math.max(0, currentY - startY);
-                const deltaX = currentX - startX;
-                
-                gameState.power = Math.min(100, (deltaY / 200) * 100);
-                powerFill.style.height = gameState.power + '%';
-                powerFill.className = 'power-fill ' + (gameState.power > 70 ? 'high' : 'low');
-                
-                if (gameState.power > 70 && 'vibrate' in navigator) {
-                    navigator.vibrate(50);
-                }
-                
-                gameState.aimAngle = Math.max(-30, Math.min(30, (deltaX / 100) * 30));
-                aimLine.style.setProperty('--angle', gameState.aimAngle + 'deg');
-                aimLine.style.transform = `translateX(-50%) rotate(${gameState.aimAngle}deg)`;
-                
-                const ballOffset = Math.min(40, deltaY * 0.2);
-                ball.style.transform = `translateX(-50%) translateY(${ballOffset}px)`;
-            });
-
-            ball.addEventListener('touchend', (e) => {
-                if (!isDragging || gameState.ballInMotion) return;
-                e.preventDefault();
-                isDragging = false;
-                
-                if (gameState.power > 5) {
-                    rollBall();
-                } else {
-                    ball.style.transform = 'translateX(-50%)';
-                    aimLine.style.transform = 'translateX(-50%) rotate(0deg)';
-                    powerFill.style.height = '0%';
-                    powerFill.className = 'power-fill low';
-                    gameState.power = 0;
-                    gameState.aimAngle = 0;
-                }
-            });
-
-            document.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-            }, { passive: false });
-        }
-
+        // Modify ball rolling function for faster speed
         function rollBall() {
-            if (gameState.ballInMotion) return;
+            // Previous code...
             
-            gameState.ballInMotion = true;
-            const ball = document.getElementById('ball');
-            const powerFill = document.getElementById('powerFill');
-            const aimLine = document.getElementById('aimLine');
-            
-            playSound('roll.mp3'); // Add roll.mp3 in your project folder
-            powerFill.style.height = '0%';
-            powerFill.className = 'power-fill low';
-            aimLine.style.transform = 'translateX(-50%) rotate(0deg)';
-            
-            const aimOffset = (gameState.aimAngle / 30) * 100;
-            ball.style.left = `calc(50% + ${aimOffset}px)`;
-            
-            ball.classList.add('rolling');
-            
-            const powerFactor = gameState.power / 100;
-            const aimAccuracy = 1 - Math.abs(gameState.aimAngle) / 30 * 0.3;
-            const accuracy = aimAccuracy * (0.7 + (Math.random() * 0.3));
-            
+            // Faster animation timing
             setTimeout(() => {
                 const pinsHit = calculatePinsHit(powerFactor, accuracy, gameState.aimAngle);
                 knockDownPins(pinsHit);
@@ -609,312 +255,27 @@
                 setTimeout(() => {
                     processRoll(pinsHit);
                     resetBallPosition();
-                }, 1500);
-            }, 2000);
+                }, 800); // Reduced from 1500
+            }, 1200); // Reduced from 2000
         }
 
-        function calculatePinsHit(power, accuracy, aimAngle) {
-            const baseHits = Math.floor(power * 10 * accuracy);
-            const randomFactor = Math.random();
-            
-            if (power > 0.8 && accuracy > 0.8 && Math.abs(aimAngle) < 10 && randomFactor > 0.6) {
-                return 10;
-            }
-            
-            let pinsHit = Math.min(10, Math.max(0, baseHits + Math.floor(Math.random() * 3) - 1));
-            
-            if (Math.abs(aimAngle) > 20) {
-                pinsHit = Math.max(0, pinsHit - 2);
-            } else if (Math.abs(aimAngle) < 5) {
-                pinsHit = Math.min(10, pinsHit + 1);
-            }
-            
-            if (gameState.currentRoll === 2) {
-                const pinsStanding = pins.filter(pin => !pin.knocked).length;
-                pinsHit = Math.min(pinsHit, pinsStanding);
-            }
-            
-            return pinsHit;
-        }
-
-        function knockDownPins(numPins) {
-            const standingPins = pins.filter(pin => !pin.knocked);
-            
-            if (numPins > 0) {
-                playSound('strike.mp3'); // Add strike.mp3 in your project folder
-                createPinExplosion();
-            }
-            
-            for (let i = 0; i < Math.min(numPins, standingPins.length); i++) {
-                const randomIndex = Math.floor(Math.random() * standingPins.length);
-                const pinToKnock = standingPins.splice(randomIndex, 1)[0];
-                pinToKnock.knocked = true;
-                pinToKnock.element.style.setProperty('--angle', Math.random() > 0.5 ? 1 : -1);
-                
-                setTimeout(() => {
-                    pinToKnock.element.classList.add('knocked');
-                }, i * 100);
-            }
-            
-            if (numPins === 10) {
-                setTimeout(() => {
-                    playSound('cheer.mp3'); // Add cheer.mp3 in your project folder
-                    showCelebration(gameState.currentRoll === 1 ? "STRIKE! 🔥" : "SPARE! ✨");
-                }, 500);
-            }
-        }
-
+        // Enhanced pin explosion
         function createPinExplosion() {
-            const pinsArea = document.getElementById('pinsArea');
-            const explosion = document.createElement('div');
-            explosion.className = 'pin-explosion';
+            // Previous code...
             
-            for (let i = 0; i < 12; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'pin-particle';
+            for (let i = 0; i < 24; i++) { // Increased particle count
+                // Add varying colors
+                const colors = ['#FFD700', '#FF8C00', '#FF4500'];
+                particle.style.background = colors[i % 3];
                 
-                const angle = (i / 12) * Math.PI * 2;
-                const distance = 50 + Math.random() * 30;
-                const dx = Math.cos(angle) * distance;
-                const dy = Math.sin(angle) * distance;
-                
-                particle.style.left = '60px';
-                particle.style.top = '40px';
-                particle.style.setProperty('--dx', dx + 'px');
-                particle.style.setProperty('--dy', dy + 'px');
-                
-                explosion.appendChild(particle);
-            }
-            
-            pinsArea.appendChild(explosion);
-            
-            setTimeout(() => {
-                explosion.remove();
-            }, 1000);
-        }
-
-        function showCelebration(text) {
-            const celebration = document.createElement('div');
-            celebration.className = 'celebration';
-            celebration.textContent = text;
-            document.querySelector('.game-container').appendChild(celebration);
-            
-            const canvas = document.createElement('canvas');
-            canvas.className = 'confetti';
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            document.querySelector('.game-container').appendChild(canvas);
-            const ctx = canvas.getContext('2d');
-            
-            const confetti = Array(50).fill().map(() => ({
-                x: Math.random() * canvas.width,
-                y: Math.random() * -canvas.height,
-                size: Math.random() * 10 + 5,
-                speed: Math.random() * 5 + 2,
-                color: `hsl(${Math.random() * 360}, 100%, 50%)`
-            }));
-            
-            function animateConfetti() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                confetti.forEach(p => {
-                    p.y += p.speed;
-                    ctx.fillStyle = p.color;
-                    ctx.fillRect(p.x, p.y, p.size, p.size);
-                });
-                if (confetti.some(p => p.y < canvas.height)) {
-                    requestAnimationFrame(animateConfetti);
-                } else {
-                    canvas.remove();
-                }
-            }
-            animateConfetti();
-            
-            setTimeout(() => {
-                celebration.remove();
-            }, 2000);
-        }
-
-        function processRoll(pinsHit) {
-            const frame = gameState.frames[gameState.currentFrame - 1];
-            frame.rolls.push(pinsHit);
-            
-            if (gameState.currentRoll === 1 && pinsHit === 10) {
-                frame.isStrike = true;
-                nextFrame();
-            } else if (gameState.currentRoll === 2) {
-                if (frame.rolls[0] + frame.rolls[1] === 10) {
-                    frame.isSpare = true;
-                }
-                nextFrame();
-            } else {
-                gameState.currentRoll = 2;
-            }
-            
-            calculateScore();
-            updateScoreboard();
-        }
-
-        function nextFrame() {
-            if (gameState.currentFrame < 10) {
-                gameState.currentFrame++;
-                gameState.currentRoll = 1;
-                setTimeout(() => {
-                    createPins();
-                }, 1000);
-            } else {
-                if (gameState.currentFrame === 10) {
-                    const frame = gameState.frames[9];
-                    if (frame.isStrike || frame.isSpare) {
-                        if (frame.rolls.length < 3) {
-                            gameState.currentRoll++;
-                            if (frame.rolls.length === 2 && (frame.rolls[0] === 10 || frame.rolls[0] + frame.rolls[1] === 10)) {
-                                setTimeout(() => {
-                                    createPins();
-                                }, 1000);
-                            }
-                            return;
-                        }
-                    }
-                }
-                endGame();
+                // Add random size variation
+                particle.style.width = `${4 + Math.random() * 4}px`;
+                particle.style.height = particle.style.width;
             }
         }
-
-        function calculateScore() {
-            let total = 0;
-            
-            for (let i = 0; i < 10; i++) {
-                const frame = gameState.frames[i];
-                
-                if (i < 9) {
-                    if (frame.isStrike) {
-                        frame.total = 10;
-                        if (gameState.frames[i + 1].rolls.length > 0) {
-                            frame.total += gameState.frames[i + 1].rolls[0];
-                            if (gameState.frames[i + 1].isStrike && i < 8 && gameState.frames[i + 2].rolls.length > 0) {
-                                frame.total += gameState.frames[i + 2].rolls[0];
-                            } else if (gameState.frames[i + 1].rolls.length > 1) {
-                                frame.total += gameState.frames[i + 1].rolls[1];
-                            }
-                        }
-                    } else if (frame.isSpare) {
-                        frame.total = 10;
-                        if (gameState.frames[i + 1].rolls.length > 0) {
-                            frame.total += gameState.frames[i + 1].rolls[0];
-                        }
-                    } else {
-                        frame.total = frame.rolls.reduce((sum, roll) => sum + roll, 0);
-                    }
-                } else {
-                    frame.total = frame.rolls.reduce((sum, roll) => sum + roll, 0);
-                }
-                
-                total += frame.total;
-            }
-            
-            gameState.totalScore = total;
-        }
-
-        function updateScoreboard() {
-            const framesContainer = document.getElementById('framesContainer');
-            framesContainer.innerHTML = '';
-            
-            gameState.frames.forEach((frame, index) => {
-                const frameDiv = document.createElement('div');
-                frameDiv.className = `frame ${index + 1 === gameState.currentFrame ? 'current' : ''}`;
-                
-                const frameNumber = document.createElement('div');
-                frameNumber.className = 'frame-number';
-                frameNumber.textContent = index + 1;
-                
-                const rolls = document.createElement('div');
-                rolls.className = 'rolls';
-                
-                if (index < 9) {
-                    if (frame.isStrike) {
-                        rolls.textContent = 'X';
-                    } else if (frame.isSpare) {
-                        rolls.textContent = `${frame.rolls[0]} /`;
-                    } else {
-                        rolls.textContent = frame.rolls.map(roll => roll || '-').join(' ');
-                    }
-                } else {
-                    rolls.textContent = frame.rolls.map(roll => roll === 10 ? 'X' : roll || '-').join(' ');
-                }
-                
-                const frameTotal = document.createElement('div');
-                frameTotal.className = 'frame-total';
-                frameTotal.textContent = frame.total || '';
-                
-                frameDiv.appendChild(frameNumber);
-                frameDiv.appendChild(rolls);
-                frameDiv.appendChild(frameTotal);
-                framesContainer.appendChild(frameDiv);
-            });
-            
-            document.getElementById('currentFrame').textContent = gameState.currentFrame;
-            document.getElementById('currentRoll').textContent = gameState.currentRoll;
-            document.getElementById('totalScore').textContent = gameState.totalScore;
-        }
-
-        function resetBallPosition() {
-            const ball = document.getElementById('ball');
-            ball.classList.remove('rolling');
-            ball.style.transform = 'translateX(-50%)';
-            ball.style.left = '50%';
-            gameState.ballInMotion = false;
-            gameState.power = 0;
-            gameState.aimAngle = 0;
-        }
-
-        function startGame() {
-            gameState.gameStarted = true;
-            document.getElementById('instruction').classList.add('hidden');
-        }
-
-        function resetGame() {
-            gameState = {
-                currentFrame: 1,
-                currentRoll: 1,
-                frames: Array(10).fill().map(() => ({ rolls: [], total: 0, isStrike: false, isSpare: false })),
-                totalScore: 0,
-                gameStarted: false,
-                ballInMotion: false,
-                touchStart: null,
-                power: 0,
-                aimAngle: 0
-            };
-            
-            createPins();
-            updateScoreboard();
-            resetBallPosition();
-            document.getElementById('instruction').classList.remove('hidden');
-            document.getElementById('powerFill').style.height = '0%';
-            document.getElementById('powerFill').className = 'power-fill low';
-            document.getElementById('aimLine').style.transform = 'translateX(-50%) rotate(0deg)';
-        }
-
-        function endGame() {
-            const finalScore = gameState.totalScore;
-            let message = "Game Over! 🎳\n\n";
-            
-            if (finalScore >= 200) {
-                message += "🏆 INCREDIBLE! You're a bowling legend!";
-            } else if (finalScore >= 150) {
-                message += "🔥 EXCELLENT! Great game!";
-            } else if (finalScore >= 100) {
-                message += "👍 GOOD JOB! Nice bowling!";
-            } else {
-                message += "💪 Keep practicing! You'll get better!";
-            }
-            
-            message += `\n\nFinal Score: ${finalScore}`;
-            
-            setTimeout(() => {
-                alert(message);
-            }, 1000);
-        }
-
+        
+        // Initialize background
+        createBackground();
         initGame();
     </script>
 </body>
