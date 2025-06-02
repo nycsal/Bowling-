@@ -29,10 +29,12 @@
         .lane {
             width: 100%;
             height: 70%;
-            background: linear-gradient(to top, #8B4513 0%, #D2691E 20%, #F4A460 100%);
+            background: linear-gradient(to top, #654321 0%, #8B4513 30%, #D2691E 60%, #DEB887 100%);
             position: relative;
             perspective: 1000px;
             overflow: hidden;
+            border-left: 8px solid #4A4A4A;
+            border-right: 8px solid #4A4A4A;
         }
 
         .lane::before {
@@ -41,10 +43,29 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 4px;
+            width: 6px;
             height: 100%;
             background: linear-gradient(to bottom, #FF6B35 0%, #F7931E 50%, #FFD23F 100%);
-            box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.8);
+            z-index: 1;
+        }
+
+        .lane::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    to top,
+                    transparent 0px,
+                    transparent 40px,
+                    rgba(0,0,0,0.1) 40px,
+                    rgba(0,0,0,0.1) 42px
+                );
+            pointer-events: none;
         }
 
         .pins-area {
@@ -81,42 +102,129 @@
         }
 
         .pin.knocked {
-            transform: rotateZ(90deg) translateY(-15px);
-            opacity: 0.7;
+            animation: pinFall 0.8s ease-out forwards;
+        }
+
+        @keyframes pinFall {
+            0% { 
+                transform: rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            30% {
+                transform: rotate(45deg) scale(1.1);
+                opacity: 0.9;
+            }
+            100% { 
+                transform: rotate(90deg) translateY(-15px) scale(0.8);
+                opacity: 0.6;
+            }
+        }
+
+        .pin-explosion {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .pin-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #FFD700;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translate(var(--dx), var(--dy));
+            }
+        }
+
+        .aim-line {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            width: 4px;
+            height: 40%;
+            background: linear-gradient(to top, 
+                rgba(255, 255, 255, 0.8) 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%
+            );
+            transform-origin: bottom center;
+            transform: translateX(-50%);
+            transition: transform 0.1s ease-out;
+            z-index: 5;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
         .ball {
             position: absolute;
-            width: 24px;
-            height: 24px;
+            width: 50px;
+            height: 50px;
             background: radial-gradient(circle at 30% 30%, #ff6b6b, #ee5a52, #c44569);
             border-radius: 50%;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             transition: all 0.1s ease-out;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.6), inset -4px -4px 8px rgba(0,0,0,0.4);
             z-index: 10;
+            cursor: grab;
+        }
+
+        .ball:active {
+            cursor: grabbing;
         }
 
         .ball::before {
             content: '';
             position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 4px;
-            height: 4px;
+            top: 8px;
+            left: 8px;
+            width: 12px;
+            height: 12px;
             background: rgba(255,255,255,0.8);
             border-radius: 50%;
         }
 
-        .ball.rolling {
-            animation: roll 2s ease-out;
+        .ball::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 4px;
+            height: 4px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
         }
 
-        @keyframes roll {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            100% { transform: translateX(-50%) rotate(720deg); }
+        .ball.rolling {
+            animation: rollDown 2.5s ease-out forwards;
+        }
+
+        @keyframes rollDown {
+            0% { 
+                transform: translateX(-50%) rotate(0deg) scale(1);
+                bottom: 30px;
+            }
+            50% {
+                transform: translateX(-50%) rotate(360deg) scale(0.8);
+                bottom: 50%;
+            }
+            100% { 
+                transform: translateX(-50%) rotate(720deg) scale(0.5);
+                bottom: 80%;
+                opacity: 0.7;
+            }
         }
 
         .power-meter {
@@ -280,6 +388,7 @@
         <div class="lane">
             <div class="pins-area" id="pinsArea"></div>
             <div class="ball" id="ball"></div>
+            <div class="aim-line" id="aimLine"></div>
             <div class="power-meter">
                 <div class="power-fill" id="powerFill"></div>
             </div>
@@ -296,8 +405,9 @@
 
         <div class="instruction" id="instruction">
             🎳 Welcome to Strike Zone Bowling! 🎳<br><br>
-            • Touch and drag down on the ball to aim<br>
-            • Pull back further for more power<br>
+            • Touch and drag down on the ball for power<br>
+            • Drag left/right while pulling back to aim<br>
+            • Watch the white aim line!<br>
             • Release to bowl!<br><br>
             <button onclick="startGame()" style="background: #4ecdc4; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 16px; cursor: pointer;">START GAME</button>
         </div>
@@ -314,7 +424,8 @@
             gameStarted: false,
             ballInMotion: false,
             touchStart: null,
-            power: 0
+            power: 0,
+            aimAngle: 0
         };
 
         let pins = [];
@@ -355,15 +466,18 @@
         function setupTouchControls() {
             const ball = document.getElementById('ball');
             const powerFill = document.getElementById('powerFill');
+            const aimLine = document.getElementById('aimLine');
             let isDragging = false;
             let startY = 0;
+            let startX = 0;
 
             ball.addEventListener('touchstart', (e) => {
                 if (gameState.ballInMotion || !gameState.gameStarted) return;
                 e.preventDefault();
                 isDragging = true;
                 startY = e.touches[0].clientY;
-                gameState.touchStart = { x: e.touches[0].clientX, y: startY };
+                startX = e.touches[0].clientX;
+                gameState.touchStart = { x: startX, y: startY };
             });
 
             ball.addEventListener('touchmove', (e) => {
@@ -371,13 +485,20 @@
                 e.preventDefault();
                 
                 const currentY = e.touches[0].clientY;
+                const currentX = e.touches[0].clientX;
                 const deltaY = Math.max(0, currentY - startY);
-                gameState.power = Math.min(100, (deltaY / 200) * 100);
+                const deltaX = currentX - startX;
                 
+                // Calculate power
+                gameState.power = Math.min(100, (deltaY / 200) * 100);
                 powerFill.style.height = gameState.power + '%';
                 
+                // Calculate aim angle (limited range)
+                gameState.aimAngle = Math.max(-30, Math.min(30, (deltaX / 100) * 30));
+                aimLine.style.transform = `translateX(-50%) rotate(${gameState.aimAngle}deg)`;
+                
                 // Visual feedback - move ball slightly
-                const ballOffset = Math.min(30, deltaY * 0.15);
+                const ballOffset = Math.min(40, deltaY * 0.2);
                 ball.style.transform = `translateX(-50%) translateY(${ballOffset}px)`;
             });
 
@@ -391,8 +512,10 @@
                 } else {
                     // Reset ball position if not enough power
                     ball.style.transform = 'translateX(-50%)';
+                    aimLine.style.transform = 'translateX(-50%) rotate(0deg)';
                     powerFill.style.height = '0%';
                     gameState.power = 0;
+                    gameState.aimAngle = 0;
                 }
             });
 
@@ -408,40 +531,54 @@
             gameState.ballInMotion = true;
             const ball = document.getElementById('ball');
             const powerFill = document.getElementById('powerFill');
+            const aimLine = document.getElementById('aimLine');
             
-            // Reset power meter
+            // Reset power meter and aim line
             powerFill.style.height = '0%';
+            aimLine.style.transform = 'translateX(-50%) rotate(0deg)';
             
-            // Animate ball rolling
+            // Apply aim angle to ball trajectory
+            const aimOffset = (gameState.aimAngle / 30) * 100; // Convert angle to pixel offset
+            ball.style.left = `calc(50% + ${aimOffset}px)`;
+            
+            // Animate ball rolling down the lane
             ball.classList.add('rolling');
             
-            // Calculate accuracy and power
-            const accuracy = 0.7 + (Math.random() * 0.3); // Some randomness
+            // Calculate accuracy and power based on aim and power
             const powerFactor = gameState.power / 100;
+            const aimAccuracy = 1 - Math.abs(gameState.aimAngle) / 30 * 0.3; // Better accuracy with centered aim
+            const accuracy = aimAccuracy * (0.7 + (Math.random() * 0.3));
             
             // Simulate ball reaching pins
             setTimeout(() => {
-                const pinsHit = calculatePinsHit(powerFactor, accuracy);
+                const pinsHit = calculatePinsHit(powerFactor, accuracy, gameState.aimAngle);
                 knockDownPins(pinsHit);
                 
                 setTimeout(() => {
                     processRoll(pinsHit);
                     resetBallPosition();
-                }, 1000);
-            }, 1500);
+                }, 1500);
+            }, 2000);
         }
 
-        function calculatePinsHit(power, accuracy) {
+        function calculatePinsHit(power, accuracy, aimAngle) {
             const baseHits = Math.floor(power * 10 * accuracy);
             const randomFactor = Math.random();
             
-            // Strike probability increases with power and accuracy
-            if (power > 0.8 && accuracy > 0.8 && randomFactor > 0.7) {
+            // Strike probability increases with power and accuracy, decreases with bad aim
+            if (power > 0.8 && accuracy > 0.8 && Math.abs(aimAngle) < 10 && randomFactor > 0.6) {
                 return 10; // Strike!
             }
             
-            // Calculate actual pins hit
+            // Calculate actual pins hit based on aim
             let pinsHit = Math.min(10, Math.max(0, baseHits + Math.floor(Math.random() * 3) - 1));
+            
+            // Adjust for aim - better aim hits more pins
+            if (Math.abs(aimAngle) > 20) {
+                pinsHit = Math.max(0, pinsHit - 2);
+            } else if (Math.abs(aimAngle) < 5) {
+                pinsHit = Math.min(10, pinsHit + 1);
+            }
             
             // If it's the second roll, can't hit more pins than are standing
             if (gameState.currentRoll === 2) {
@@ -455,17 +592,59 @@
         function knockDownPins(numPins) {
             const standingPins = pins.filter(pin => !pin.knocked);
             
+            // Create explosion effect
+            if (numPins > 0) {
+                createPinExplosion();
+            }
+            
             for (let i = 0; i < Math.min(numPins, standingPins.length); i++) {
                 const randomIndex = Math.floor(Math.random() * standingPins.length);
                 const pinToKnock = standingPins.splice(randomIndex, 1)[0];
                 pinToKnock.knocked = true;
-                pinToKnock.element.classList.add('knocked');
+                
+                // Add staggered animation delay for more realistic effect
+                setTimeout(() => {
+                    pinToKnock.element.classList.add('knocked');
+                }, i * 100);
             }
             
             // Celebration for strikes and spares
             if (numPins === 10) {
-                showCelebration(gameState.currentRoll === 1 ? "STRIKE! 🔥" : "SPARE! ✨");
+                setTimeout(() => {
+                    showCelebration(gameState.currentRoll === 1 ? "STRIKE! 🔥" : "SPARE! ✨");
+                }, 500);
             }
+        }
+
+        function createPinExplosion() {
+            const pinsArea = document.getElementById('pinsArea');
+            const explosion = document.createElement('div');
+            explosion.className = 'pin-explosion';
+            
+            // Create multiple particles
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'pin-particle';
+                
+                const angle = (i / 12) * Math.PI * 2;
+                const distance = 50 + Math.random() * 30;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                
+                particle.style.left = '60px';
+                particle.style.top = '40px';
+                particle.style.setProperty('--dx', dx + 'px');
+                particle.style.setProperty('--dy', dy + 'px');
+                
+                explosion.appendChild(particle);
+            }
+            
+            pinsArea.appendChild(explosion);
+            
+            // Remove explosion after animation
+            setTimeout(() => {
+                explosion.remove();
+            }, 1000);
         }
 
         function showCelebration(text) {
@@ -612,8 +791,10 @@
             const ball = document.getElementById('ball');
             ball.classList.remove('rolling');
             ball.style.transform = 'translateX(-50%)';
+            ball.style.left = '50%'; // Reset horizontal position
             gameState.ballInMotion = false;
             gameState.power = 0;
+            gameState.aimAngle = 0;
         }
 
         function startGame() {
@@ -630,7 +811,8 @@
                 gameStarted: false,
                 ballInMotion: false,
                 touchStart: null,
-                power: 0
+                power: 0,
+                aimAngle: 0
             };
             
             createPins();
@@ -638,6 +820,7 @@
             resetBallPosition();
             document.getElementById('instruction').classList.remove('hidden');
             document.getElementById('powerFill').style.height = '0%';
+            document.getElementById('aimLine').style.transform = 'translateX(-50%) rotate(0deg)';
         }
 
         function endGame() {
